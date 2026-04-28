@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historia de la Filosofía 2.º Bachillerato - NotebookLM - Quiz Export</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+        :root {
+            --bg: #f6f1e7;
+            --bg-deep: #efe4d6;
+            --ink: #171717;
+            --muted: #5b5b5b;
+            --accent: #d3542c;
+            --accent-light: #ff8f5a;
+            --accent-dark: #b14320;
+            --teal: #1f6f78;
+            --card: #fff7ef;
+            --stroke: #e3d6c5;
+            --shadow: 0 18px 40px rgba(23, 23, 23, 0.12);
+            --radius-sm: 10px;
+            --radius-md: 12px;
+            --radius-lg: 14px;
+            --radius-xl: 18px;
+            --radius-2xl: 22px;
+            --space-1: 6px;
+            --space-2: 8px;
+            --space-3: 10px;
+            --space-4: 12px;
+            --space-5: 14px;
+            --space-6: 16px;
+            --space-7: 18px;
+            --space-8: 20px;
+            --space-9: 24px;
+            --space-10: 32px;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-body: 'IBM Plex Sans', sans-serif;
+            --error: #b54832;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background:
+                radial-gradient(240px 140px at 10% -10%, #ffd2b9 0%, transparent 70%),
+                radial-gradient(220px 160px at 90% 0%, #cfe7e6 0%, transparent 65%),
+                linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+            color: var(--ink);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .quiz-container {
+            width: 100%;
+            max-width: 800px;
+            padding: var(--space-10) var(--space-8);
+            box-sizing: border-box;
+            background: var(--card);
+            border-radius: var(--radius-2xl);
+            border: 1px solid var(--stroke);
+            box-shadow: var(--shadow);
+        }
+
+        .progress-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .progress-text {
+            color: var(--muted);
+            font-size: 0.9em;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 16px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-correct { color: var(--teal); }
+        .status-wrong { color: var(--error); }
+
+        .question-text {
+            font-family: var(--font-display);
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 32px;
+            line-height: 1.4;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-item {
+            background-color: #fff;
+            border: 1px solid var(--stroke);
+            padding: var(--space-4) var(--space-6);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .option-item:hover:not(.selected) {
+            background-color: var(--card);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 18px rgba(23, 23, 23, 0.12);
+        }
+
+        .option-item.selected.correct {
+            background-color: rgba(31, 111, 120, 0.12);
+            border-color: var(--teal);
+        }
+
+        .option-item.selected.incorrect {
+            background-color: rgba(181, 72, 50, 0.12);
+            border-color: var(--error);
+        }
+
+        .option-item.revealed-correct {
+            border-color: rgba(31, 111, 120, 0.5);
+            box-shadow: inset 0 0 0 1px rgba(31, 111, 120, 0.16);
+        }
+
+        .option-label {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .feedback-state {
+            font-weight: bold;
+            font-size: 0.9em;
+            display: none;
+        }
+
+        .selected .feedback-state {
+            display: block;
+        }
+
+        .revealed-correct .feedback-state {
+            display: block;
+        }
+
+        .correct .feedback-state { color: var(--teal); }
+        .incorrect .feedback-state { color: var(--error); }
+        .revealed-correct .feedback-state { color: var(--teal); }
+
+        .rationale {
+            font-size: 0.95em;
+            color: var(--muted);
+            margin-top: 4px;
+            line-height: 1.5;
+            display: none;
+        }
+
+        .selected .rationale {
+            display: block;
+        }
+
+        .revealed-correct .rationale {
+            display: block;
+        }
+        .hint-toggle {
+            border: 1px solid var(--stroke);
+            color: var(--muted);
+            cursor: pointer;
+            padding: var(--space-2) var(--space-6);
+            border-radius: var(--radius-md);
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .hint-toggle:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 18px rgba(23, 23, 23, 0.12);
+        }
+
+        .hint-content {
+            margin-top: 32px;
+            padding: var(--space-6);
+            background-color: #fff;
+            border: 1px solid var(--stroke);
+            border-radius: var(--radius-lg);
+            font-size: 0.95em;
+            color: var(--muted);
+            display: none;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .hint-content.active {
+            display: flex;
+        }
+
+        .hint-icon-box {
+            color: var(--accent-dark);
+            font-size: 1.2em;
+            margin-top: -2px;
+        }
+
+        .navigation {
+            margin-top: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            border-radius: var(--radius-md);
+            padding: var(--space-2) var(--space-7);
+            font-size: 0.95em;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-prev {
+            background-color: #fff;
+            color: var(--ink);
+            border-color: var(--stroke);
+        }
+
+        .btn-prev:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 18px rgba(23, 23, 23, 0.12);
+        }
+
+        .btn-next {
+            background: linear-gradient(90deg, var(--accent), var(--accent-light));
+            color: #fff;
+        }
+
+        .btn-next:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 18px rgba(23, 23, 23, 0.12);
+        }
+
+        .btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .results-screen {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-8);
+        }
+
+        .results-title {
+            font-family: var(--font-display);
+            font-size: 2.1em;
+            margin: 0;
+        }
+
+        .results-subtitle {
+            color: var(--muted);
+            margin: 0;
+            font-size: 1em;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-6);
+        }
+
+        .result-card {
+            padding: var(--space-6);
+            border-radius: var(--radius-xl);
+            background: #fff;
+            border: 1px solid var(--stroke);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .result-label {
+            color: var(--muted);
+            font-size: 0.95em;
+        }
+
+        .result-value {
+            font-size: 2em;
+            font-family: var(--font-display);
+        }
+
+        .result-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+            color: var(--muted);
+            font-size: 0.95em;
+        }
+
+        .results-actions {
+            display: flex;
+            gap: var(--space-4);
+            flex-wrap: wrap;
+        }
+
+        .btn-ghost {
+            background-color: transparent;
+            border: 1px solid var(--stroke);
+            color: var(--ink);
+        }
+
+        .hidden { display: none; }
+
+        @media (max-width: 900px) {
+            .quiz-container {
+                margin: var(--space-8);
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .quiz-container {
+                padding: var(--space-8) var(--space-6);
+            }
+
+            .question-text {
+                font-size: 1.3em;
+            }
+
+            .option-item {
+                padding: var(--space-4);
+            }
+        }
+
+        @media (max-width: 520px) {
+            body {
+                align-items: flex-start;
+            }
+
+            .quiz-container {
+                margin: var(--space-6);
+                padding: var(--space-7) var(--space-5);
+            }
+
+            .progress-container {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-3);
+            }
+
+            .navigation {
+                flex-direction: column;
+                align-items: stretch;
+                gap: var(--space-4);
+            }
+
+            .nav-buttons {
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .hint-toggle {
+                justify-content: space-between;
+            }
+
+            .results-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div id="quiz-content">
+            <!-- Dynamic Content -->
+        </div>
+        <div id="results-content" class="hidden"></div>
+
+        <div id="hint-box" class="hint-content">
+            <div class="hint-icon-box">💡</div>
+            <div id="hint-text"></div>
+        </div>
+
+        <div class="navigation">
+            <button id="hint-toggle" class="hint-toggle">
+                <span>Hint</span>
+                <span id="hint-icon-arrow">▼</span>
+            </button>
+            <div class="nav-buttons">
+                <button id="prev-btn" class="btn btn-prev">Previous</button>
+                <button id="next-btn" class="btn btn-next">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [{"answerOptions":[{"isCorrect":false,"rationale":"El lógos implica precisamente que el universo es un cosmos ordenado y comprensible.","text":"La negación de que el universo tenga un orden o estructura."},{"isCorrect":true,"rationale":"El lógos representa la búsqueda de una explicación racional y científica frente a la narrativa simbólica del mito.","text":"La sustitución de explicaciones arbitrarias por leyes racionales y necesarias."},{"isCorrect":false,"rationale":"Al contrario, los primeros filósofos se centraron intensamente en la observación de la naturaleza o $\\textit{physis}$.","text":"El abandono total de la observación de la naturaleza por la mística."},{"isCorrect":false,"rationale":"Eso describe el antropomorfismo de la religión griega, no el pensamiento racional del lógos.","text":"La creación de nuevos dioses con forma humana para explicar el cosmos."}],"hint":"Relaciona este cambio con la búsqueda de causas naturales y leyes fijas.","question":"¿Cuál es el concepto que define el paso del mito al lógos en los orígenes de la filosofía?"},{"answerOptions":[{"isCorrect":false,"rationale":"El fuego fue el principio propuesto por Heráclito de Éfeso, no por Tales.","text":"El fuego"},{"isCorrect":true,"rationale":"Tales propuso el agua basándose en la observación de su necesidad para la vida y sus cambios de estado.","text":"El agua"},{"isCorrect":false,"rationale":"Anaximandro fue quien propuso que el principio era una sustancia indefinida e infinita.","text":"Lo indeterminado ($\\textit{ápeiron}$)"},{"isCorrect":false,"rationale":"Anaxímenes fue quien identificó el aire como el elemento infinito y determinado del origen.","text":"El aire"}],"hint":"Observa qué elemento es fundamental para la humedad y la vida en un puerto como Mileto.","question":"Para Tales de Mileto, ¿cuál era el $\\textit{arché}$ o principio de todas las cosas?"},{"answerOptions":[{"isCorrect":false,"rationale":"Demócrito propuso una teoría atómica donde los átomos son inmutables, aunque se muevan en el vacío.","text":"Demócrito"},{"isCorrect":false,"rationale":"Pitágoras se centró en el número como estructura fija y eterna de la realidad.","text":"Pitágoras"},{"isCorrect":false,"rationale":"Parménides sostenía precisamente lo contrario: que el ser es inmutable y que el movimiento es una ilusión.","text":"Parménides"},{"isCorrect":true,"rationale":"Heráclito defendió que el cambio es la estructura de la realidad, simbolizado por el fuego y el río.","text":"Heráclito"}],"hint":"Este pensador utilizaba la metáfora del río en el que no puedes bañarte dos veces.","question":"¿Qué filósofo presocrático afirmó que 'todo fluye' ($panta \\ rei$) y que la realidad es puro devenir?"},{"answerOptions":[{"isCorrect":true,"rationale":"Mediante la lógica, Parménides deduce que el ser no puede cambiar ni dividirse, pues implicaría el no-ser.","text":"Único, inmutable, eterno e indivisible."},{"isCorrect":false,"rationale":"Esta es la propuesta pluralista de Empédocles para explicar la pluralidad negada por Parménides.","text":"Una mezcla de cuatro raíces: agua, aire, tierra y fuego."},{"isCorrect":false,"rationale":"Estas son las características que Parménides atribuye a la apariencia engañosa de los sentidos, no a la verdad.","text":"Múltiple, cambiante y perecedero."},{"isCorrect":false,"rationale":"Esa descripción corresponde a la filosofía de Heráclito, antagonista de la de Parménides.","text":"Un flujo constante de contrarios en armonía."}],"hint":"Recuerda que para este autor, si algo cambia, dejaría de 'ser' lo que es.","question":"Según Parménides de Elea, ¿cuáles son las características fundamentales del Ser?"},{"answerOptions":[{"isCorrect":false,"rationale":"El enfoque socrático es racionalista y humano, centrado en el examen de la propia vida.","text":"En que la moral depende exclusivamente de la voluntad divina."},{"isCorrect":false,"rationale":"Esa era la postura de los sofistas, contra la cual Sócrates defendía verdades universales.","text":"En que los valores morales son relativos a cada cultura y convención."},{"isCorrect":true,"rationale":"Sócrates creía que nadie hace el mal a sabiendas, sino por ignorancia de lo que es verdaderamente bueno.","text":"En que la virtud es conocimiento y quien conoce el bien, actuará bien."},{"isCorrect":false,"rationale":"Sócrates criticaba el enfoque materialista y abogaba por el cuidado del alma.","text":"En que el bien se alcanza mediante la acumulación de riquezas y éxito político."}],"hint":"Piensa en la relación que establece el autor entre el saber y la conducta ética.","question":"¿En qué consistía el 'intelectualismo moral' propuesto por Sócrates?"},{"answerOptions":[{"isCorrect":true,"rationale":"Las Ideas son los modelos perfectos (arquetipos) y las cosas del mundo físico son copias imperfectas.","text":"Por participación o imitación: las cosas imitan a las Ideas."},{"isCorrect":false,"rationale":"Para Platón, las Ideas son inmateriales y puramente inteligibles.","text":"Las Ideas son la materia de la que están compuestas las cosas físicas."},{"isCorrect":false,"rationale":"Platón es un realista extremo; las Ideas existen de forma independiente y superior a las cosas físicas.","text":"Las Ideas son conceptos mentales que dependen de la existencia de las cosas."},{"isCorrect":false,"rationale":"Aunque están separados, el mundo sensible 'participa' del inteligible para tener algo de realidad.","text":"No existe ninguna relación, son mundos totalmente aislados."}],"hint":"Considera a las Ideas como moldes o modelos perfectos de la realidad.","question":"En la Teoría de las Ideas de Platón, ¿cómo define el autor la relación entre las cosas sensibles y las Ideas?"},{"answerOptions":[{"isCorrect":false,"rationale":"El ser humano es un compuesto que aspira al conocimiento de las Ideas, no la cúspide del sistema.","text":"El Ser Humano"},{"isCorrect":false,"rationale":"Aunque es fundamental, la Justicia se subordina al Bien en el sistema platónico.","text":"La Idea de Justicia"},{"isCorrect":true,"rationale":"El Bien es el principio supremo que otorga verdad e inteligibilidad a todas las demás Ideas.","text":"La Idea de Bien"},{"isCorrect":false,"rationale":"La Belleza es una Idea elevada, pero el Bien es el sol que ilumina todo el mundo inteligible.","text":"La Idea de Belleza"}],"hint":"Es la causa última de todas las cosas rectas y bellas, comparada con el sol en el mito.","question":"¿Cuál es la Idea suprema en la jerarquía del mundo inteligible de Platón?"},{"answerOptions":[{"isCorrect":false,"rationale":"Es la fuente de los deseos primarios y placeres sensibles, situada en el abdomen.","text":"El alma apetitiva"},{"isCorrect":false,"rationale":"Solo el alma racional es considerada inmortal por Platón; las otras dos mueren con el cuerpo.","text":"El alma inmortal"},{"isCorrect":false,"rationale":"Esta parte es la encargada del conocimiento y la dirección del individuo.","text":"El alma racional"},{"isCorrect":true,"rationale":"Ubicada en el pecho, es la fuente de la voluntad y el coraje, y debe aliarse con la razón.","text":"El alma irascible"}],"hint":"En el mito del carro alado, se representa por el caballo blanco y obediente.","question":"Según la división tripartita del alma en Platón, ¿qué parte es responsable de las pasiones nobles como el valor?"},{"answerOptions":[{"isCorrect":false,"rationale":"Su crítica es ontológica (sobre el ser) más que cuantitativa.","text":"Que las Ideas son demasiadas y complican el conocimiento."},{"isCorrect":false,"rationale":"Aristóteles mantiene la confianza en la razón, pero aplicada al mundo de la experiencia.","text":"Que la razón no es capaz de alcanzar la verdad absoluta."},{"isCorrect":true,"rationale":"Aristóteles rechaza el dualismo platónico y defiende que la esencia está 'dentro' del individuo concreto.","text":"Que la esencia de las cosas no puede existir separada de las cosas mismas."},{"isCorrect":false,"rationale":"Aristóteles precisamente intenta recuperar el valor de la realidad física y el cambio.","text":"Que el mundo sensible es una ilusión total y no existe."}],"hint":"Se trata de la negación del 'mundo separado' de las esencias.","question":"¿Qué crítica fundamental realiza Aristóteles a la Teoría de las Ideas de Platón?"},{"answerOptions":[{"isCorrect":true,"rationale":"La materia es el soporte y la forma es la esencia que hace que algo sea lo que es.","text":"Como un compuesto indisoluble de materia y forma."},{"isCorrect":false,"rationale":"Para Aristóteles, alma y cuerpo forman una única sustancia y no suelen considerarse separables.","text":"Como una entidad espiritual que sobrevive a la muerte del cuerpo."},{"isCorrect":false,"rationale":"Esa es la visión materialista de Demócrito, no la teoría hilemórfica.","text":"Como un conjunto de átomos moviéndose en el vacío."},{"isCorrect":false,"rationale":"La materia pura es potencia, pero la sustancia requiere de la forma para existir realmente.","text":"Como la materia pura antes de recibir cualquier configuración."}],"hint":"La palabra proviene de $\\textit{hyle}$ (materia) y $\\textit{morphé}$ (forma).","question":"En la teoría aristotélica del hilemorfismo, ¿cómo se define a la sustancia?"},{"answerOptions":[{"isCorrect":false,"rationale":"La causa final se refiere a la plenitud del desarrollo, no necesariamente al cese de la vida.","text":"La muerte o destrucción inevitable de todos los seres vivos."},{"isCorrect":false,"rationale":"Esa es la causa material.","text":"La materia de la que está compuesto un ser natural."},{"isCorrect":false,"rationale":"Eso define a la causa eficiente o motriz, no a la final.","text":"El agente externo que produce un cambio en un objeto."},{"isCorrect":true,"rationale":"Aristóteles cree que todo en la naturaleza sucede para algo, buscando su propio perfeccionamiento.","text":"El propósito o fin hacia el cual tiende el desarrollo de un ser."}],"hint":"Piensa en el objetivo o la función que un ser intenta realizar.","question":"¿Qué entiende Aristóteles por 'causa final' (teleología) en la naturaleza?"},{"answerOptions":[{"isCorrect":true,"rationale":"La virtud es el equilibrio; por ejemplo, la valentía entre la cobardía y la temeridad.","text":"En un término medio entre dos extremos viciosos, determinado por la razón."},{"isCorrect":false,"rationale":"Esa es la visión de Platón; para Aristóteles la virtud requiere hábito y práctica.","text":"En el conocimiento puramente teórico de la Idea de Bien."},{"isCorrect":false,"rationale":"La ética aristotélica es humana y racional, previa al pensamiento cristiano.","text":"En el cumplimiento estricto de las leyes divinas reveladas."},{"isCorrect":false,"rationale":"Aristóteles busca la moderación o templanza ($\\textit{sophrosyne}$), no la supresión de las pasiones.","text":"En la anulación total de todos los deseos y pasiones del alma."}],"hint":"Es una disposición adquirida que huye tanto del exceso como del defecto.","question":"Para Aristóteles, ¿en qué consiste la virtud ética?"},{"answerOptions":[{"isCorrect":false,"rationale":"Aunque algunos fueron políticos, el énfasis estoico estaba en el autodominio interior.","text":"La participación activa en política para transformar la sociedad democrática."},{"isCorrect":false,"rationale":"Esa descripción corresponde al escepticismo, no al estoicismo.","text":"El cuestionamiento constante de toda verdad posible para alcanzar la duda."},{"isCorrect":false,"rationale":"Esa es la propuesta del hedonismo o el epicureísmo (aunque matizada en este último).","text":"La búsqueda del placer sensible como fin supremo de la vida."},{"isCorrect":true,"rationale":"Buscan la $\\textit{ataraxia}$ mediante la aceptación del orden racional y necesario del universo.","text":"Vivir de acuerdo con la naturaleza y la razón, aceptando el destino con imperturbabilidad."}],"hint":"Enfócate en la idea de la apatía o control de las pasiones ante el destino.","question":"¿Cuál es la característica principal de la ética de los Estoicos?"},{"answerOptions":[{"isCorrect":true,"rationale":"El placer epicúreo es estático ($\\textit{ataraxia}$), huyendo de los excesos que traen dolor futuro.","text":"La ausencia de dolor en el cuerpo y de perturbación en el alma."},{"isCorrect":false,"rationale":"Epicuro recomendaba 'vivir oculto' y alejado de las turbulencias de la política.","text":"El reconocimiento público y la gloria en la vida civil."},{"isCorrect":false,"rationale":"Epicuro buscaba evitar el dolor; el ascetismo extremo no es propio de su jardín.","text":"El sufrimiento físico como medio para purificar el espíritu."},{"isCorrect":false,"rationale":"Epicuro criticó estos placeres por ser inestables y producir mayores sufrimientos a largo plazo.","text":"El goce desenfrenado de banquetes, lujos y placeres sexuales."}],"hint":"Se trata de un estado de calma y sencillez, no de agitación.","question":"Según Epicuro, ¿cuál es el verdadero placer que debe buscar el sabio?"},{"answerOptions":[{"isCorrect":true,"rationale":"Matemática y filósofa, su muerte a manos de fanáticos simboliza el fin de una era para la filosofía pagana.","text":"La última gran filósofa neoplatónica de la antigüedad y mártir del pensamiento racional."},{"isCorrect":false,"rationale":"Hipatia era pagana y neoplatónica, no cristiana.","text":"La fundadora de la mística cristiana en la Edad Media."},{"isCorrect":false,"rationale":"Vivió en Alejandría y se dedicó a la enseñanza, no al gobierno político directo.","text":"La primera mujer en gobernar la ciudad de Atenas siguiendo leyes platónicas."},{"isCorrect":false,"rationale":"Hipatia vivió muchos siglos después de Sócrates, en el periodo romano tardío.","text":"Una sofista contemporánea de Sócrates que defendió el relativismo."}],"hint":"Destacó en matemáticas y astronomía en un periodo de fuerte conflicto religioso.","question":"¿Qué representa la figura de Hipatia de Alejandría en la historia de la filosofía?"},{"answerOptions":[{"isCorrect":false,"rationale":"Agustín está más influenciado por el platonismo que por el aristotelismo.","text":"La observación de las leyes físicas de Aristóteles."},{"isCorrect":true,"rationale":"Agustín propone el camino de 'entrar en uno mismo' para trascender hacia Dios.","text":"La interioridad del alma, donde reside la iluminación divina."},{"isCorrect":false,"rationale":"La verdad para Agustín es de origen divino, no una mera construcción humana.","text":"El análisis lógico de los lenguajes matemáticos puramente humanos."},{"isCorrect":false,"rationale":"Para Agustín, el conocimiento sensible es mudable y no ofrece la verdad eterna.","text":"El estudio empírico de los objetos de la naturaleza exterior."}],"hint":"Recuerda su frase: 'No salgas fuera, vuelve a ti mismo; en el hombre interior habita la verdad'.","question":"San Agustín de Hipona afirma que la verdad debe buscarse en:"},{"answerOptions":[{"isCorrect":false,"rationale":"Esta era una visión extremista que Tomás intentó superar integrando a Aristóteles.","text":"Están en conflicto permanente y la razón debe ser anulada por la fe."},{"isCorrect":false,"rationale":"Para un pensador medieval como Tomás, la fe es la guía suprema para la salvación.","text":"La fe es una forma inferior de conocimiento que desaparecerá con la ciencia."},{"isCorrect":false,"rationale":"Tomás distingue entre misterios de fe (como la Trinidad) y verdades de razón (como la física).","text":"Son exactamente lo mismo y no hay distinción entre contenidos de fe y de razón."},{"isCorrect":true,"rationale":"Tomás cree que la verdad es única y proviene de Dios, por lo que ambas no pueden contradecirse.","text":"Son independientes y distintas, pero armónicas y complementarias."}],"hint":"Busca el equilibrio entre la herencia de Aristóteles y el dogma cristiano.","question":"Para Santo Tomás de Aquino, ¿qué relación existe entre la Razón y la Fe?"},{"answerOptions":[{"isCorrect":true,"rationale":"Ejemplos son la existencia de Dios y la inmortalidad del alma, demostrables racionalmente.","text":"Verdades que pueden ser alcanzadas tanto por la razón natural como por la revelación."},{"isCorrect":false,"rationale":"Los preámbulos son proposiciones teóricas o verdades intelectuales.","text":"Los pecados que impiden al hombre alcanzar el conocimiento de Dios."},{"isCorrect":false,"rationale":"Esos son los 'artículos de fe' o misterios, no los preámbulos.","text":"Los dogmas que la razón nunca podrá comprender y solo debe aceptar."},{"isCorrect":false,"rationale":"Aunque son verdades de razón, no se consideran preámbulos necesarios para la salvación.","text":"Las leyes físicas que rigen el movimiento de los planetas."}],"hint":"Son verdades puente que la razón puede demostrar para facilitar la creencia.","question":"¿Qué son los 'Preámbulos de la Fe' en la filosofía de Santo Tomás?"},{"answerOptions":[{"isCorrect":false,"rationale":"Ese es el argumento ontológico de San Anselmo o Descartes, que Tomás rechazó.","text":"La idea innata de perfección que todos tenemos en la mente."},{"isCorrect":true,"rationale":"Tomás sigue a Aristóteles: el conocimiento humano empieza por los sentidos (método $\\textit{a posteriori}$).","text":"La experiencia sensible y los hechos del mundo real."},{"isCorrect":false,"rationale":"La duda metódica es característica de Descartes en la Edad Moderna.","text":"La duda metódica sobre la existencia del mundo exterior."},{"isCorrect":false,"rationale":"Las vías pretenden ser pruebas racionales filosóficas, no meramente teológicas basadas en la autoridad.","text":"La lectura directa de las Sagradas Escrituras."}],"hint":"Tomás cree que el entendimiento humano debe subir de los efectos a la causa.","question":"¿Cuál es el punto de partida común de las 'Cinco Vías' de Santo Tomás para demostrar la existencia de Dios?"},{"answerOptions":[{"isCorrect":false,"rationale":"Al contrario, su duda es un medio para llegar a la certeza, no un fin en sí mismo.","text":"Demostrar que es imposible conocer nada con certeza (escepticismo)."},{"isCorrect":true,"rationale":"Descartes duda de todo para ver si queda algo que resista a la duda, llegando al $\\textit{cogito}$.","text":"Encontrar una verdad absoluta e indubitable para fundamentar la ciencia."},{"isCorrect":false,"rationale":"Descartes es el padre del racionalismo moderno; su confianza en la razón es total.","text":"Eliminar la razón para sustituirla por la fe pura."},{"isCorrect":false,"rationale":"Descartes era un filósofo serio que incluso intentó demostrar la existencia de Dios con su método.","text":"Burlarse de las autoridades eclesiásticas de su época."}],"hint":"No es una duda escéptica, sino una herramienta para construir un edificio sólido.","question":"¿Qué objetivo perseguía René Descartes con el uso de la 'Duda Metódica'?"},{"answerOptions":[{"isCorrect":false,"rationale":"El $\\textit{cogito}$ es una intuición solitaria del sujeto sobre sí mismo.","text":"La existencia humana depende de la aprobación de los demás."},{"isCorrect":true,"rationale":"Incluso si un genio maligno me engaña, para ser engañado debo existir como algo que piensa.","text":"El Yo como sustancia pensante es la primera verdad evidente."},{"isCorrect":false,"rationale":"Para Descartes, la esencia del alma es la pura actividad de pensar ($\\textit{res cogitans}$).","text":"Solo existimos cuando realizamos acciones físicas en el mundo."},{"isCorrect":false,"rationale":"Descartes duda del cuerpo y los sentidos antes que del pensamiento.","text":"El cuerpo es más real que el pensamiento porque lo podemos tocar."}],"hint":"Se trata del descubrimiento del sujeto como base del conocimiento.","question":"Al pronunciar 'Pienso, luego existo' ($\\textit{Cogito, ergo sum}$), Descartes establece que:"},{"answerOptions":[{"isCorrect":false,"rationale":"Aunque Descartes valoraba la ciencia, la garantía última es metafísica.","text":"La comprobación constante mediante experimentos científicos repetibles."},{"isCorrect":true,"rationale":"Dios garantiza que la facultad de conocer que nos ha dado no es fallida cuando vemos algo con evidencia.","text":"La existencia de un Dios bueno y veraz que no nos engaña."},{"isCorrect":false,"rationale":"Descartes desconfía de los sentidos; son las ideas innatas de la razón las que son fiables.","text":"La perfección matemática de los sentidos humanos."},{"isCorrect":false,"rationale":"La verdad cartesiana se basa en la evidencia subjetiva y la garantía divina, no en la mayoría.","text":"El consenso unánime de todos los seres humanos."}],"hint":"Busca la figura que elimina la hipótesis del 'genio maligno'.","question":"En el sistema de Descartes, ¿qué garantiza que nuestras ideas claras y distintas sobre el mundo son verdaderas?"},{"answerOptions":[{"isCorrect":true,"rationale":"En lugar de que el sujeto sea un espejo pasivo, es el sujeto quien pone las condiciones para que el objeto sea conocido.","text":"El objeto es el que debe regirse por las leyes del conocimiento del sujeto."},{"isCorrect":false,"rationale":"Kant intenta sintetizar ambas; no abandona la razón, sino que la analiza.","text":"El abandono de la razón en favor de la experiencia pura."},{"isCorrect":false,"rationale":"Se refiere al centro del proceso de conocimiento, no a una posición física.","text":"La afirmación de que el ser humano es el centro físico del universo."},{"isCorrect":false,"rationale":"Esta es la revolución de Copérnico en astronomía; Kant la usa solo como analogía metodológica.","text":"La demostración de que la Tierra gira alrededor del Sol en metafísica."}],"hint":"Piensa en quién se adapta a quién en el acto de conocer: ¿el sujeto al objeto o el objeto al sujeto?","question":"Kant define su 'Giro Copernicano' en la filosofía como:"},{"answerOptions":[{"isCorrect":false,"rationale":"Para Kant son previos a la experiencia ($\\textit{a priori}$), no derivados de ella.","text":"Conceptos aprendidos mediante la observación repetida de la naturaleza."},{"isCorrect":true,"rationale":"Son las estructuras que el sujeto impone a las sensaciones para que estas puedan ser percibidas.","text":"Formas $\\textit{a priori}$ de la sensibilidad o intuiciones puras."},{"isCorrect":false,"rationale":"Son condiciones necesarias para cualquier experiencia humana posible.","text":"Ilusiones ópticas que debemos superar para conocer la verdad."},{"isCorrect":false,"rationale":"Kant niega que sepamos cómo es el espacio 'en sí'; es una condición de nuestra percepción.","text":"Propiedades reales de las cosas que existen fuera de nosotros."}],"hint":"No son cosas, sino 'gafas' a través de las cuales el sujeto organiza las impresiones.","question":"Según Kant, el espacio y el tiempo son:"},{"answerOptions":[{"isCorrect":false,"rationale":"Son distinciones gnoseológicas (sobre el conocimiento), no necesariamente sobre la sustancia.","text":"El fenómeno es espiritual y el noúmeno es material."},{"isCorrect":true,"rationale":"Solo conocemos la realidad procesada por nuestra mente (fenómeno), nunca la realidad pura (noúmeno).","text":"El fenómeno es lo que percibimos y el noúmeno es la 'cosa en sí' incognoscible."},{"isCorrect":false,"rationale":"Kant no dice que el fenómeno sea falso, sino que es el único objeto de conocimiento posible para nosotros.","text":"El fenómeno es falso y el noúmeno es la verdad revelada por Dios."},{"isCorrect":false,"rationale":"La distinción es la base de su Idealismo Trascendental.","text":"No hay diferencia, son dos términos para referirse a la misma experiencia."}],"hint":"Uno se adapta a nuestras facultades y el otro permanece 'detrás' de ellas.","question":"¿Qué diferencia establece Kant entre Fenómeno y Noúmeno?"},{"answerOptions":[{"isCorrect":false,"rationale":"La ética kantiana es autónoma: la ley se la da el sujeto a sí mismo por respeto a la razón.","text":"Un mandato de la autoridad civil que debe cumplirse por miedo al castigo."},{"isCorrect":true,"rationale":"Se diferencia de los imperativos hipotéticos (que buscan un fin) porque es un fin en sí mismo.","text":"Una ley moral universal que manda sin condiciones, basada en el deber."},{"isCorrect":false,"rationale":"El deber kantiano a menudo se opone a las inclinaciones naturales y deseos.","text":"Una recomendación para actuar según nuestras inclinaciones naturales."},{"isCorrect":false,"rationale":"Kant critica las éticas que buscan la felicidad por ser materiales y empíricas.","text":"Una norma que nos dice qué debemos hacer para ser felices."}],"hint":"Se expresa como: 'Obra solo según una máxima tal que puedas querer que se torne ley universal'.","question":"En la ética de Kant, ¿qué es el 'Imperativo Categórico'?"},{"answerOptions":[{"isCorrect":false,"rationale":"Eso es un síntoma, pero la causa profunda es el límite de nuestras facultades de conocimiento.","text":"Porque los filósofos nunca se ponen de acuerdo entre ellos."},{"isCorrect":true,"rationale":"La ciencia requiere la unión de concepto (categoría) e intuición (sensibilidad), y de Dios o el alma no tenemos intuición.","text":"Porque las categorías del entendimiento no tienen datos sensibles a los que aplicarse."},{"isCorrect":false,"rationale":"Kant escribe en la Ilustración, buscando precisamente los límites internos de la razón.","text":"Porque la Iglesia prohibió el estudio de la metafísica racional."},{"isCorrect":false,"rationale":"Kant dice que podemos 'pensar' a Dios como idea regulativa, pero no 'conocerlo' científicamente.","text":"Porque Dios es una idea que la mente humana no puede ni siquiera pensar."}],"hint":"Para que haya conocimiento científico, debe haber algo que ver u oír en el espacio y tiempo.","question":"¿Por qué Kant afirma que la Metafísica no es posible como ciencia?"},{"answerOptions":[{"isCorrect":false,"rationale":"La alienación es un concepto sociológico y filosófico serio sobre la explotación.","text":"La creencia en que los extraterrestres controlan la economía mundial."},{"isCorrect":false,"rationale":"Marx se refiere específicamente a la relación de producción y la pérdida de la esencia humana en el trabajo.","text":"El sentimiento de soledad que produce vivir en las grandes ciudades."},{"isCorrect":true,"rationale":"En el capitalismo, el fruto del esfuerzo del obrero pertenece al dueño de los medios de producción.","text":"El trabajador pierde el control sobre el producto de su trabajo y sobre sí mismo."},{"isCorrect":false,"rationale":"La alienación es una deshumanización estructural, no solo un problema de consumo.","text":"La falta de dinero para comprar bienes de lujo."}],"hint":"Relaciónalo con el hecho de que el trabajador se convierte en una 'mercancía' más.","question":"¿Qué entiende Karl Marx por 'Alienación Económica'?"},{"answerOptions":[{"isCorrect":false,"rationale":"Para Marx, las ideas son superestructura determinada por la base económica, no el motor primario.","text":"El progreso de las ideas filosóficas y religiosas."},{"isCorrect":false,"rationale":"Marx defiende una visión colectiva y económica de la historia, no individualista.","text":"La voluntad de los grandes líderes y héroes."},{"isCorrect":false,"rationale":"Marx busca leyes científicas y sociales que expliquen el desarrollo histórico.","text":"El azar y los desastres naturales."},{"isCorrect":true,"rationale":"La contradicción entre las fuerzas productivas y las relaciones de producción estalla en conflictos de clase.","text":"La lucha de clases"}],"hint":"Es el conflicto entre opresores y oprimidos a lo largo de las épocas.","question":"En el Materialismo Histórico de Marx, ¿cuál es el 'motor de la historia'?"},{"answerOptions":[{"isCorrect":false,"rationale":"Es una metáfora crítica sobre el control social y la falsa conciencia.","text":"Que las iglesias deberían distribuir medicamentos a los pobres."},{"isCorrect":true,"rationale":"Funciona como una justificación ideológica que impide la lucha por la transformación social inmediata.","text":"Que la religión adormece a los oprimidos prometiendo justicia en otro mundo."},{"isCorrect":false,"rationale":"Es una crítica a la alienación religiosa, no un comentario sobre farmacología.","text":"Que el consumo de drogas está relacionado con los rituales religiosos."},{"isCorrect":false,"rationale":"Marx ve esto como algo negativo que detiene la revolución y la mejora real de las condiciones.","text":"Que la fe es necesaria para soportar los dolores físicos de la vida."}],"hint":"Considera cómo la religión puede desviar la atención de las injusticias económicas.","question":"¿Qué significa la famosa frase de Marx: 'La religión es el opio del pueblo'?"},{"answerOptions":[{"isCorrect":false,"rationale":"Nietzsche celebra la 'muerte de Dios' como liberación; no busca rescatar la metafísica.","text":"No haber sido capaz de demostrar racionalmente la existencia de Dios."},{"isCorrect":false,"rationale":"Nietzsche también critica la ciencia cuando se convierte en un nuevo dogmatismo.","text":"Haberse aliado con las ciencias experimentales."},{"isCorrect":true,"rationale":"Nietzsche ve en el platonismo un odio a la vida, al cambio y al cuerpo.","text":"Haber inventado un 'mundo verdadero' (ideal) despreciando el único mundo real (el sensible)."},{"isCorrect":false,"rationale":"Su crítica es vitalista y ontológica, no pedagógica.","text":"Ser demasiado complicada para el ciudadano común."}],"hint":"Se refiere a la duplicación del mundo que comenzó con Platón.","question":"¿Cuál es la crítica central de Nietzsche a la Metafísica occidental?"},{"answerOptions":[{"isCorrect":false,"rationale":"Esas son las características de la 'moral de señores'.","text":"La afirmación gozosa de la vida y el orgullo individual."},{"isCorrect":false,"rationale":"Nietzsche ve en la democracia y el socialismo herencias de la moral de esclavos cristiana.","text":"El cumplimiento de las leyes democráticas por civismo."},{"isCorrect":true,"rationale":"Es una moral reactiva de los débiles para protegerse y frenar a los fuertes (nobles).","text":"El resentimiento y la valoración de la humildad, la compasión y la igualdad."},{"isCorrect":false,"rationale":"Nietzsche asocia la moral de esclavos con una actitud psicológica de rencor contra la vitalidad.","text":"La búsqueda de la sabiduría a través del estudio de los clásicos."}],"hint":"Nace de la rebelión de los oprimidos contra los valores de los poderosos.","question":"En la 'Genealogía de la Moral' de Nietzsche, ¿qué caracteriza a la 'moral de esclavos'?"},{"answerOptions":[{"isCorrect":false,"rationale":"Es una metáfora espiritual sobre la creación de valores, no una propuesta de primitivismo.","text":"El regreso a una vida primitiva sin tecnología ni cultura."},{"isCorrect":false,"rationale":"Esa es la fase del 'Camello', no del 'Niño'.","text":"La obediencia ciega a las tradiciones de los antepasados."},{"isCorrect":true,"rationale":"Tras la carga del camello y la negación del león, el niño es el nuevo comienzo afirmativo.","text":"La capacidad de crear nuevos valores desde la inocencia y el juego."},{"isCorrect":false,"rationale":"El niño de Nietzsche es autónomo y no necesita a Dios (el cual ha muerto).","text":"La inmadurez del ser humano que necesita ser guiado por un Dios."}],"hint":"Es la tercera transformación, posterior al camello y al león.","question":"¿Qué representa la metamorfosis del 'Niño' en 'Así habló Zaratustra' de Nietzsche?"},{"answerOptions":[{"isCorrect":true,"rationale":"Busca el dominio total convirtiendo a los humanos en piezas de un engranaje burocrático masivo.","text":"La destrucción total de la identidad individual y la capacidad de pensar."},{"isCorrect":false,"rationale":"Las artes y ciencias son puestas al servicio de la propaganda ideológica en estos regímenes.","text":"La promoción de las artes y las ciencias como motor del Estado."},{"isCorrect":false,"rationale":"El totalitarismo es la negación absoluta de la política democrática y la libertad.","text":"El establecimiento de una sociedad puramente democrática y participativa."},{"isCorrect":false,"rationale":"Arendt distingue el totalitarismo de las simples dictaduras por su ambición de control absoluto del espíritu.","text":"La mejora de la economía nacional mediante una dictadura eficiente."}],"hint":"Considera el concepto de 'aniquilación de la persona jurídica y moral'.","question":"Hannah Arendt analiza el Totalitarismo destacando que su fin es:"},{"answerOptions":[{"isCorrect":false,"rationale":"Es un análisis profundo sobre la falta de juicio crítico, no sobre el entretenimiento.","text":"A que el mal es algo divertido y superficial para la mayoría de la gente."},{"isCorrect":true,"rationale":"Lo observó en el juicio a Eichmann: no era un monstruo sádico, sino un administrativo cumplidor.","text":"A que el mal puede ser cometido por burócratas normales que simplemente 'no piensan' ni cuestionan órdenes."},{"isCorrect":false,"rationale":"Arendt no quita importancia al mal, sino que advierte sobre su naturaleza ordinaria y aterradora.","text":"A que las acciones malas no tienen importancia real en el gran esquema de la historia."},{"isCorrect":false,"rationale":"Precisamente Arendt argumenta lo contrario: gente 'normal' puede ser partícipe de horrores.","text":"A que solo los psicópatas y locos son capaces de organizar genocidios."}],"hint":"Relaciónalo con la incapacidad de reflexionar sobre las consecuencias de las propias acciones.","question":"¿A qué se refiere Hannah Arendt con el concepto de 'La Banalidad del Mal'?"},{"answerOptions":[{"isCorrect":false,"rationale":"Sartre es un existencialista ateo; niega cualquier diseño previo para el ser humano.","text":"Dios ya ha decidido quiénes somos antes de que nazcamos."},{"isCorrect":true,"rationale":"A diferencia de un objeto fabricado con un fin, el ser humano aparece y luego se construye.","text":"El hombre no tiene una naturaleza fija y se define a sí mismo mediante sus elecciones."},{"isCorrect":false,"rationale":"Es al revés: primero existimos en el mundo y luego nos damos un sentido.","text":"Primero debemos pensar cómo ser para luego poder existir físicamente."},{"isCorrect":false,"rationale":"El existencialismo defiende la libertad absoluta frente al determinismo biológico.","text":"Nuestros genes determinan totalmente nuestra personalidad y destino."}],"hint":"Enfócate en la libertad radical del individuo para 'hacerse' a sí mismo.","question":"La frase de Jean-Paul Sartre 'la existencia precede a la esencia' significa que:"},{"answerOptions":[{"isCorrect":false,"rationale":"Los analíticos suelen ser críticos con la metafísica tradicional.","text":"La construcción de grandes sistemas metafísicos sobre el origen del universo."},{"isCorrect":false,"rationale":"Ese es el enfoque del existencialismo, no de la filosofía analítica.","text":"La búsqueda del sentido de la angustia y la desesperación humana."},{"isCorrect":true,"rationale":"Consideran que muchos problemas filosóficos son solo malentendidos lingüísticos.","text":"El análisis lógico del lenguaje para evitar confusiones y pseudoproblemas."},{"isCorrect":false,"rationale":"Su enfoque es técnico, lógico y a menudo empirista o cientificista.","text":"La defensa de la fe cristiana frente a los ataques de la ciencia moderna."}],"hint":"Piensa en filósofos como Russell o el primer Wittgenstein.","question":"¿Cuál es la preocupación principal de la Filosofía Analítica?"},{"answerOptions":[{"isCorrect":false,"rationale":"Exigen precisamente el rigor de la observación empírica.","text":"Los experimentos científicos no necesitan ser comprobados si la teoría es bella."},{"isCorrect":false,"rationale":"Se refiere a la validez del lenguaje científico, no a un control político-religioso.","text":"Todo lo que dice la Iglesia debe ser verificado por el Estado."},{"isCorrect":true,"rationale":"Cuestiones como la existencia de Dios o el alma quedan fuera como proposiciones sin sentido científico.","text":"Solo tienen sentido las proposiciones comprobables por la experiencia o la lógica."},{"isCorrect":false,"rationale":"Los neopositivistas rechazan lo subjetivo/emocional como base de la verdad.","text":"La verdad se verifica mediante la intuición emocional del sujeto."}],"hint":"Es una postura radical que limita el lenguaje significativo a lo empírico.","question":"El Neopositivismo Lógico defendía el 'Principio de Verificación', que afirma:"},{"answerOptions":[{"isCorrect":true,"rationale":"El lenguaje no es un espejo rígido, sino una actividad social con reglas cambiantes.","text":"Su uso en el lenguaje dentro de un contexto o 'juego de lenguaje'."},{"isCorrect":false,"rationale":"Wittgenstein se centra en la práctica lingüística humana, no en la teología.","text":"Una idea eterna que reside en la mente de Dios."},{"isCorrect":false,"rationale":"Esa era su visión en la primera etapa ($\\textit{Tractatus}$), que luego corrigió.","text":"El objeto físico al que la palabra señala en el mundo real."},{"isCorrect":false,"rationale":"Las definiciones son solo una parte del uso, pero el lenguaje es mucho más flexible.","text":"La definición exacta que aparece en el diccionario oficial."}],"hint":"Piensa en la metáfora de la caja de herramientas o los juegos.","question":"En su segunda etapa, Wittgenstein afirmó que el significado de una palabra es:"},{"answerOptions":[{"isCorrect":false,"rationale":"Este término es de Descartes y se refiere a la materia física.","text":"$Res \\ extensa$ (cosa con extensión)."},{"isCorrect":true,"rationale":"Aristóteles sostiene que solo en la $\\textit{pólis}$ el hombre puede realizar plenamente su naturaleza racional y moral.","text":"$Zoon \\ politikón$ (animal político/cívico)."},{"isCorrect":false,"rationale":"Concepto de Nietzsche sobre la superación de la moral tradicional.","text":"$Übermensch$ (superhombre)."},{"isCorrect":false,"rationale":"Concepto de Marx para describir al trabajador en el sistema capitalista.","text":"Individuo alienado."}],"hint":"Destaca la sociabilidad natural del ser humano.","question":"¿Qué concepto aristotélico describe al hombre como un ser que necesita de la ciudad para ser feliz?"},{"answerOptions":[{"isCorrect":true,"rationale":"Representa el ascenso del alma desde las sombras del mundo sensible a la luz de las Ideas.","text":"Ilustrar el proceso de educación y el paso de la ignorancia al conocimiento."},{"isCorrect":false,"rationale":"Tiene un profundo sentido metafísico, gnoseológico y político.","text":"Contar una historia de aventuras para entretener a los jóvenes atenienses."},{"isCorrect":false,"rationale":"Es una alegoría filosófica y pedagógica, no un manual de arquitectura.","text":"Explicar cómo se deben construir refugios seguros en tiempo de guerra."},{"isCorrect":false,"rationale":"Al contrario, la caverna es la prisión de la ignorancia.","text":"Demostrar que la vida bajo tierra es superior a la vida en la superficie."}],"hint":"Enfócate en lo que simboliza la salida del prisionero al exterior.","question":"¿Cuál es el propósito de la 'Alegoría de la Caverna' en Platón?"},{"answerOptions":[{"isCorrect":false,"rationale":"Eso forma parte de la estructura económica o infraestructura.","text":"Las relaciones de propiedad entre el burgués y el obrero."},{"isCorrect":true,"rationale":"Es el conjunto de ideas e instituciones que justifican y mantienen la base económica.","text":"Las leyes, la religión, la política y la ideología de una sociedad."},{"isCorrect":false,"rationale":"Es un concepto sociológico sobre las ideas, no una descripción arquitectónica.","text":"Los edificios más altos y modernos de las ciudades industriales."},{"isCorrect":false,"rationale":"Esos elementos forman parte de las fuerzas productivas (infraestructura).","text":"Las fábricas, las máquinas y las materias primas."}],"hint":"Es lo que se levanta sobre la base económica de la sociedad.","question":"En la filosofía de Marx, la 'Superestructura' comprende:"},{"answerOptions":[{"isCorrect":false,"rationale":"Esa es la propuesta de Demócrito.","text":"El vacío absoluto donde se mueven los átomos."},{"isCorrect":false,"rationale":"El enfoque numérico es propio de los pitagóricos.","text":"La esfera perfecta de los números."},{"isCorrect":true,"rationale":"Al no ser un elemento concreto como el agua, permite explicar mejor el origen de todos los contrarios.","text":"Lo indeterminado o indefinido."},{"isCorrect":false,"rationale":"El concepto de inteligencia ordenadora ($\\textit{Nous}$) es de Anaxágoras.","text":"La inteligencia divina que ordena el caos."}],"hint":"Es un elemento que no tiene límites ni características físicas concretas.","question":"Anaximandro de Mileto propuso como principio el '$\\textit{ápeiron}$'. ¿Qué significa este término?"},{"answerOptions":[{"isCorrect":false,"rationale":"Es un concepto físico y cosmológico, no una doctrina de salvación religiosa.","text":"Garantizar la salvación del alma tras la muerte física."},{"isCorrect":true,"rationale":"Es una fuerza externa y pura que da inicio al torbellino que separa y mezcla las cosas.","text":"Ser el principio del movimiento que ordena las semillas o $\\textit{spérmata}$."},{"isCorrect":false,"rationale":"Anaxágoras es pluralista; cree en infinitas semillas, no solo en la inteligencia.","text":"Ser el único elemento del que está compuesto el universo."},{"isCorrect":false,"rationale":"El $\\textit{Nous}$ ordena la materia preexistente (semillas), no crea de la nada.","text":"Crear el mundo de la nada absoluta."}],"hint":"Actúa como una mente que pone en orden el caos original de partículas.","question":"¿Cuál es la función del '$\\textit{Nous}$' o Inteligencia en la filosofía de Anaxágoras?"},{"answerOptions":[{"isCorrect":false,"rationale":"Los pitagóricos tenían un fuerte componente religioso y espiritual.","text":"La negación de la existencia de cualquier tipo de alma."},{"isCorrect":true,"rationale":"Creían que el alma es inmortal y se reencarna en diferentes seres vivos según su conducta.","text":"La transmigración de las almas o metempsicosis."},{"isCorrect":false,"rationale":"Esa era la visión homérica tradicional, no la mística órfico-pitagórica.","text":"Que el alma es una sombra sin memoria que vaga por el Hades."},{"isCorrect":false,"rationale":"Consideraban el cuerpo como una prisión para el alma, visión que heredaría Platón.","text":"Que el cuerpo es sagrado y debe ser adorado sobre todas las cosas."}],"hint":"Se refiere al viaje del alma a través de diversos cuerpos.","question":"¿Qué doctrina mística compartían los Pitagóricos?"},{"answerOptions":[{"isCorrect":false,"rationale":"Su enfoque era humanista y a menudo agnóstico (como el de Protágoras).","text":"La verdad solo puede ser revelada por los oráculos de los dioses."},{"isCorrect":true,"rationale":"Protágoras afirmaba que 'el hombre es la medida de todas las cosas'.","text":"No existen verdades absolutas; la verdad depende del sujeto y del contexto."},{"isCorrect":false,"rationale":"Ellos distinguían entre $\\textit{physis}$ (naturaleza) y $\\textit{nomos}$ (ley convencional), siendo esta última relativa.","text":"Todas las leyes de la naturaleza son iguales para todos los seres."},{"isCorrect":false,"rationale":"Los sofistas se centraban en la retórica y los asuntos humanos, no en la certeza matemática.","text":"Solo la razón matemática ofrece verdades seguras para todos."}],"hint":"Considera que para ellos lo justo en una ciudad puede ser injusto en otra.","question":"Los Sofistas se caracterizaban por su Relativismo. Esto significa que:"},{"answerOptions":[{"isCorrect":false,"rationale":"El método socrático busca la investigación común, no la imposición.","text":"Imponer su propia opinión mediante la fuerza del razonamiento lógico."},{"isCorrect":false,"rationale":"Sócrates nunca escribió nada; su filosofía era puramente oral y dialogada.","text":"Escribir libros complejos para que los sabios los estudien."},{"isCorrect":false,"rationale":"Eso era propio de los sofistas, a quienes Sócrates se oponía.","text":"Convencer a los demás mediante el uso de la retórica y el engaño."},{"isCorrect":true,"rationale":"Sócrates no enseña una doctrina, sino que mediante preguntas ayuda al otro a descubrirla.","text":"Ayudar al interlocutor a 'dar a luz' la verdad que ya posee en su interior."}],"hint":"El nombre viene del oficio de su madre, que era partera.","question":"¿Cuál es la función del método de la 'Mayéutica' de Sócrates?"},{"answerOptions":[{"isCorrect":false,"rationale":"Platón defiende un ascenso dialéctico racional, no un irracionalismo místico.","text":"El éxtasis místico de unión con la divinidad."},{"isCorrect":true,"rationale":"Es el grado inferior de conocimiento, que trata sobre el mundo sensible y cambiante.","text":"La opinión, un conocimiento superficial basado en los sentidos."},{"isCorrect":false,"rationale":"Esa es la $\\textit{episteme}$, el grado superior de conocimiento.","text":"La ciencia o conocimiento verdadero de las Ideas."},{"isCorrect":false,"rationale":"Se refiere específicamente a los niveles de realidad y su conocimiento correspondiente.","text":"Las reglas lógicas del razonamiento deductivo."}],"hint":"Es el tipo de saber que tienen los prisioneros que solo ven sombras en la caverna.","question":"En la teoría del conocimiento de Platón, la '$\\textit{Doxa}$' se refiere a:"},{"answerOptions":[{"isCorrect":false,"rationale":"Platón se centra en el recuerdo de verdades eternas, no en la adivinación.","text":"La capacidad de predecir el futuro mediante sueños."},{"isCorrect":false,"rationale":"Es un concepto gnoseológico sobre el origen del conocimiento, no psicológico sobre el olvido.","text":"El proceso de olvidar los traumas del pasado para ser feliz."},{"isCorrect":false,"rationale":"Es una teoría metafísica sobre la naturaleza del alma y el saber.","text":"Un ejercicio físico para fortalecer la memoria de los estudiantes."},{"isCorrect":true,"rationale":"El alma preexistente conoció la verdad y, al caer al cuerpo, la olvidó, necesitando estímulos sensibles para recordar.","text":"La idea de que conocer es recordar lo que el alma ya vio en el mundo de las Ideas."}],"hint":"Implica que la verdad no se adquiere de fuera, sino que se recupera desde dentro.","question":"¿Qué es la 'Reminiscencia' ($\\textit{anámnesis}$) para Platón?"},{"answerOptions":[{"isCorrect":false,"rationale":"Ockham era un fraile que quería proteger la libertad divina de las limitaciones de la lógica humana.","text":"Diciendo que la razón es superior a la fe en todos los aspectos."},{"isCorrect":false,"rationale":"Ockham defiende la autonomía de la fe, pero sin someterla al juicio de la ciencia de su tiempo.","text":"Argumentando que solo los científicos deberían interpretar la Biblia."},{"isCorrect":true,"rationale":"Ockham rompe la síntesis tomista: temas como la existencia de Dios son solo objeto de fe.","text":"Afirmando que la fe y la razón tienen contenidos totalmente distintos y la razón no puede probar dogmas."},{"isCorrect":false,"rationale":"Ockham representa precisamente la crisis de la escolástica y la crítica al tomismo.","text":"Siguiendo fielmente todas las enseñanzas de Santo Tomás sin cambios."}],"hint":"Esta postura lleva al nominalismo y a una confianza en la experiencia empírica para la razón.","question":"¿Cómo justifica Guillermo de Ockham la separación entre Fe y Razón en el siglo XIV?"}];
+        let currentIndex = 0;
+        let mode = 'quiz';
+        let state = quizData.map(() => ({ selectedIndex: null, hintVisible: false }));
+
+        function getStats() {
+            const answered = state.filter((s) => s.selectedIndex !== null).length;
+            const correct = state.filter((s, i) => s.selectedIndex !== null && quizData[i].answerOptions[s.selectedIndex].isCorrect).length;
+            const wrong = state.filter((s, i) => s.selectedIndex !== null && !quizData[i].answerOptions[s.selectedIndex].isCorrect).length;
+            const skipped = quizData.length - answered;
+            const accuracy = answered > 0 ? Math.round((correct / answered) * 100) : 0;
+            return { answered, correct, wrong, skipped, accuracy };
+        }
+
+        function shuffleAnswers() {
+            quizData.forEach((q) => {
+                for (let i = q.answerOptions.length - 1; i > 0; i -= 1) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [q.answerOptions[i], q.answerOptions[j]] = [q.answerOptions[j], q.answerOptions[i]];
+                }
+            });
+        }
+
+        function shuffleQuestions() {
+            for (let i = quizData.length - 1; i > 0; i -= 1) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [quizData[i], quizData[j]] = [quizData[j], quizData[i]];
+            }
+        }
+
+        function resetState() {
+            state = quizData.map(() => ({ selectedIndex: null, hintVisible: false }));
+        }
+
+        function renderQuestion() {
+            const q = quizData[currentIndex];
+            const s = state[currentIndex];
+            const content = document.getElementById('quiz-content');
+            const results = document.getElementById('results-content');
+            const hintBox = document.getElementById('hint-box');
+            const nav = document.querySelector('.navigation');
+            const nextBtn = document.getElementById('next-btn');
+            const prevBtn = document.getElementById('prev-btn');
+
+            let optionsHtml = '';
+            const correctIndex = q.answerOptions.findIndex((o) => o.isCorrect);
+            const selectedCorrect = s.selectedIndex !== null && q.answerOptions[s.selectedIndex].isCorrect;
+            q.answerOptions.forEach((opt, idx) => {
+                const isSelected = s.selectedIndex === idx;
+                const statusClass = isSelected ? (opt.isCorrect ? 'correct' : 'incorrect') : '';
+                const selectedClass = isSelected ? 'selected' : '';
+                const revealCorrect = (s.selectedIndex !== null && !selectedCorrect && opt.isCorrect) || (mode === 'review' && opt.isCorrect);
+                const revealClass = revealCorrect ? 'revealed-correct' : '';
+
+                optionsHtml += `
+                    <li class="option-item ${selectedClass} ${statusClass} ${revealClass}" onclick="selectOption(${idx})">
+                        <div class="option-label">
+                            <span>${String.fromCharCode(65 + idx)}. ${opt.text}</span>
+                        </div>
+                        <div class="feedback-state">
+                            ${opt.isCorrect ? '✓ Right answer' : '✕ Not quite'}
+                        </div>
+                        ${opt.rationale ? '<div class="rationale">' + opt.rationale + '</div>' : ''}
+                    </li>
+                `;
+            });
+
+            const stats = getStats();
+
+            content.innerHTML = `
+                <div class="progress-container">
+                    <div class="progress-text">${currentIndex + 1} / ${quizData.length}</div>
+                    <div class="status-bar">
+                        <div class="status-item status-correct">
+                            <span>✓</span>
+                            <span>${stats.correct}</span>
+                        </div>
+                        <div class="status-item status-wrong">
+                            <span>✕</span>
+                            <span>${stats.wrong}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="question-text">${q.question}</div>
+                <ul class="options-list">
+                    ${optionsHtml}
+                </ul>
+            `;
+
+            // Update Hint Box
+            const hintText = document.getElementById('hint-text');
+            hintText.innerText = q.hint || 'No hint available for this question.';
+            if (s.hintVisible) {
+                hintBox.classList.add('active');
+            } else {
+                hintBox.classList.remove('active');
+            }
+
+            results.classList.add('hidden');
+            content.classList.remove('hidden');
+            hintBox.classList.remove('hidden');
+            nav.classList.remove('hidden');
+
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = false;
+            if (mode === 'review') {
+                nextBtn.innerText = currentIndex === quizData.length - 1 ? 'Back to Results' : 'Next';
+            } else {
+                nextBtn.innerText = currentIndex === quizData.length - 1 ? 'Finish' : 'Next';
+            }
+            document.getElementById('hint-icon-arrow').innerText = s.hintVisible ? '▲' : '▼';
+        }
+
+        function selectOption(idx) {
+            if (mode !== 'quiz') return;
+            if (state[currentIndex].selectedIndex !== null) return; // Prevent re-selection
+            state[currentIndex].selectedIndex = idx;
+            renderQuestion();
+        }
+
+        function toggleHint() {
+            if (mode === 'results') return;
+            state[currentIndex].hintVisible = !state[currentIndex].hintVisible;
+            renderQuestion();
+        }
+
+        function renderResults() {
+            const stats = getStats();
+            const content = document.getElementById('quiz-content');
+            const results = document.getElementById('results-content');
+            const hintBox = document.getElementById('hint-box');
+            const nav = document.querySelector('.navigation');
+
+            const score = `${stats.correct} / ${quizData.length}`;
+
+            results.innerHTML = `
+                <div class="results-screen">
+                    <div>
+                        <h1 class="results-title">You did it! Quiz Complete.</h1>
+                        <p class="results-subtitle">Review your score or take another run.</p>
+                    </div>
+                    <div class="results-grid">
+                        <div class="result-card">
+                            <div class="result-label">Score</div>
+                            <div class="result-value">${score}</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">Accuracy</div>
+                            <div class="result-value">${stats.accuracy}%</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-metrics">
+                                <div>Right <strong>${stats.correct}</strong></div>
+                                <div>Wrong <strong>${stats.wrong}</strong></div>
+                                <div>Skipped <strong>${stats.skipped}</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="results-actions">
+                        <button id="review-btn" class="btn btn-ghost">Review Quiz</button>
+                        <button id="retake-btn" class="btn btn-next">Retake Quiz</button>
+                    </div>
+                </div>
+            `;
+
+            content.classList.add('hidden');
+            results.classList.remove('hidden');
+            hintBox.classList.add('hidden');
+            nav.classList.add('hidden');
+
+            document.getElementById('review-btn').onclick = () => {
+                mode = 'review';
+                currentIndex = 0;
+                renderQuestion();
+            };
+
+            document.getElementById('retake-btn').onclick = () => {
+                mode = 'quiz';
+                currentIndex = 0;
+                shuffleQuestions();
+                shuffleAnswers();
+                resetState();
+                renderQuestion();
+            };
+        }
+
+        document.getElementById('prev-btn').onclick = () => {
+            if (mode === 'results') return;
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderQuestion();
+            }
+        };
+
+        document.getElementById('next-btn').onclick = () => {
+            if (mode === 'results') return;
+            if (mode === 'review') {
+                if (currentIndex < quizData.length - 1) {
+                    currentIndex++;
+                    renderQuestion();
+                } else {
+                    mode = 'results';
+                    renderResults();
+                }
+                return;
+            }
+            if (currentIndex < quizData.length - 1) {
+                currentIndex++;
+                renderQuestion();
+            } else {
+                mode = 'results';
+                renderResults();
+            }
+        };
+
+        document.getElementById('hint-toggle').onclick = toggleHint;
+
+        renderQuestion();
+    </script>
+</body>
+</html>
